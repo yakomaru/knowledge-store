@@ -1,0 +1,72 @@
+PROJECT BRIEF: CROSS-PROJECT KNOWLEDGE STORE (MCP)
+Hand this to Claude in a fresh repo. Self-contained on purpose.
+
+WHAT
+An MCP server, registered globally, that gives any Claude Code session a
+searchable store of project knowledge it can read from and write to. One store,
+many projects, project as metadata rather than one store per repo.
+
+WHY
+Agents start every session blank. Decisions, dead ends and verified facts live
+in transcripts that are gone by the next session, or in markdown files nobody
+greps. The goal is that context survives across sessions and across projects.
+
+INTERFACE (start with exactly these two)
+  search(query, project=current, cross_project=false, limit=10)
+      -> ranked passages, each with id, project, provenance, date, source
+  write(content, project, provenance, source=null, supersedes=null)
+      -> id
+Add nothing else until these are genuinely in use.
+
+SCHEMA - the part that matters
+  id
+  project           string. REQUIRED even while single-project. Not a migration
+                    you want later.
+  content           the passage
+  provenance        ENUM, REQUIRED, no default:
+                      sourced    derived from a file, doc, URL, or command output
+                      generated  a model concluded it
+                      verified   generated, then checked by a human or a test
+  source            path, URL, or command that produced it. Required when
+                    provenance=sourced.
+  created_at
+  superseded_by     id, nullable. Entries are never deleted, only superseded.
+
+WHY PROVENANCE IS THE WHOLE DESIGN
+A store that persists model conclusions next to sourced facts, without marking
+which is which, degrades every time it is written to. Confidently wrong output
+reads identically to verified output, so future retrievals treat both as ground
+truth and the error compounds instead of evaporating at session end.
+write() MUST refuse a call with no provenance. Do not give it a default.
+
+THE HARD PARTS - this is the actual engineering, not the CRUD
+  1. Write discipline. Most of what happens in a session should NOT persist.
+     Define what earns a write. Getting this wrong fills the store with noise
+     and retrieval quality collapses.
+  2. Conflict. Two entries disagree. Prefer newest, prefer verified over
+     generated, and surface BOTH to the caller rather than silently picking.
+  3. Staleness. A fact verified three weeks ago may be false now. Return the
+     date with every result and let the caller judge.
+  4. Retrieval quality. Bad recall produces bad agent output, which is the
+     failure this exists to prevent. Measure it.
+
+STORAGE - start boring
+SQLite with FTS5. Keyword search first. Only add embeddings when you can show a
+specific query that keyword search fails on, and then run hybrid (BM25 plus
+vector, blended) rather than replacing one with the other. Do not stand up
+Elasticsearch or a vector DB for a personal store on day one.
+
+ANTI-GOALS
+  Not a generic RAG demo. Retrieval is table stakes; provenance, supersession
+  and write discipline are the point.
+  No web UI. MCP tools only.
+  No chunking strategy work until there is a corpus big enough to need it.
+
+FIRST CORPUS
+Point it at an existing directory of real notes and query it immediately. Real
+data exposes retrieval problems that synthetic test data hides.
+
+DONE LOOKS LIKE
+A session in an unrelated repo can ask "what did we decide about X and why" and
+get back a dated, attributed answer that distinguishes what was checked from
+what was assumed.

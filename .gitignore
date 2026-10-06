@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+eval/fixtures/
+*.db
+*.db-wal
+*.db-shm
+*.egg-info/
+
+# Private golden set over a real corpus; see eval/queries.yaml for the public one.
+eval/queries.local.yaml

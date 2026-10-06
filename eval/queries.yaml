@@ -1,0 +1,144 @@
+# Public golden retrieval set, over the synthetic corpus in eval/corpus/.
+#
+# `relevant` lists "<project>/<source>" paths rather than entry ids, because ids
+# are regenerated on every re-ingest while paths are stable.
+#
+# Build the database and run it:
+#   python -m knowledge_store.ingest eval/corpus --db eval/fixtures/synthetic.db
+#   python eval/run_eval.py
+#
+# The corpus is synthetic but deliberately awkward: projects share vocabulary
+# (Postgres, Redis, rate limits, caching), one planning document is duplicated
+# across two projects, and several documents discuss the same subsystem from
+# different angles. A corpus of unrelated documents makes every query trivially
+# rank-1 and measures nothing.
+
+- query: how do we replay carrier webhooks after an outage
+  project: freight-router
+  relevant: [freight-router/docs/webhook-replay-runbook.md]
+
+- query: redis eviction policy production rule
+  project: freight-router
+  relevant: [freight-router/docs/redis-operational-safety.md]
+
+- query: what are the runtime processes and the contracts boundary
+  project: freight-router
+  relevant: [freight-router/docs/architecture-tour.md]
+
+- query: local dev setup docker postgres postgis port
+  project: freight-router
+  relevant:
+    - freight-router/docs/local-dev-setup.md
+    - freight-router/README.md
+
+- query: why drizzle instead of prisma
+  project: freight-router
+  relevant: [freight-router/PLAN.md]
+
+- query: row level security tenant isolation data model
+  project: freight-router
+  relevant:
+    - freight-router/PLAN.md
+    - freight-router/bugs/release-blockers.md
+    - freight-router/docs/onboarding.md
+
+- query: carrier rate limit token bucket shared budget
+  project: freight-router
+  relevant:
+    - freight-router/PLAN.md
+    - freight-router/docs/architecture-tour.md
+
+- query: frontend forbidden patterns modal spinner color
+  project: freight-router
+  relevant: [freight-router/DESIGN.md]
+
+- query: release blocker severity policy
+  project: freight-router
+  relevant:
+    - freight-router/bugs/release-blockers.md
+    - freight-router/bugs/backlog.md
+
+- query: what does pnpm check run
+  project: freight-router
+  relevant:
+    - freight-router/README.md
+    - freight-router/docs/onboarding.md
+
+- query: carrier adapter interface capability flags
+  project: freight-router
+  relevant: [freight-router/PLAN.md]
+
+- query: run the bot as a systemd service
+  project: pollen-bot
+  relevant: [pollen-bot/DEPLOY.md]
+
+- query: message content intent slash command registration
+  project: pollen-bot
+  relevant:
+    - pollen-bot/DEPLOY.md
+    - pollen-bot/PLAN.md
+    - pollen-bot/CLAUDE.md
+
+- query: cache upstream forecast responses sqlite
+  project: pollen-bot
+  relevant:
+    - pollen-bot/PLAN.md
+    - pollen-bot/CLAUDE.md
+
+- query: how are discord rate limits handled in the broadcast
+  project: pollen-bot
+  relevant: [pollen-bot/PLAN.md]
+
+- query: how do the tests avoid hitting the real api
+  project: pollen-bot
+  relevant: [pollen-bot/README.md]
+
+- query: is a four percent withdrawal rate safe
+  project: ledger-backtest
+  relevant: [ledger-backtest/REPORT.md]
+
+- query: sequence of returns risk explanation
+  project: ledger-backtest
+  relevant: [ledger-backtest/REPORT.md]
+
+- query: real versus nominal returns deflated by CPI
+  project: ledger-backtest
+  relevant:
+    - ledger-backtest/README.md
+    - ledger-backtest/REPORT.md
+
+- query: rolling windows overlap not independent
+  project: ledger-backtest
+  relevant: [ledger-backtest/README.md]
+
+- query: harmonic constituents tide prediction
+  project: tide-clock
+  relevant: [tide-clock/SPECS.md]
+
+- query: offscreen canvas blit animation cost
+  project: tide-clock
+  relevant: [tide-clock/SPECS.md]
+
+- query: filename collision duplicate content hash
+  project: crate-sorter
+  relevant: [crate-sorter/README.md]
+
+- query: timestamps without timezone offset limitation
+  project: crate-sorter
+  relevant: [crate-sorter/README.md]
+
+# Cross-project: the same planning document lives in two projects, and the
+# question is general rather than about one of them.
+- query: carrier interface quote book track cancel
+  project: freight-router
+  cross_project: true
+  relevant:
+    - freight-router/PLAN.md
+    - freight-planning/PLAN.md
+
+- query: billing provisioning per seat metered pricing tiers
+  project: freight-planning
+  cross_project: true
+  relevant:
+    - freight-planning/PLAN.md
+    - freight-router/PLAN.md
